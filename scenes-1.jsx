@@ -238,6 +238,42 @@ function SceneTokens() {
     }
   }, [lt, playing]);
 
+  const scrollingAudioRef = React.useRef(null);
+  React.useEffect(() => {
+    const a = new Audio('scrolling.wav');
+    a.preload = 'auto';
+    a.loop = true;
+    scrollingAudioRef.current = a;
+    return () => {
+      a.pause();
+      scrollingAudioRef.current = null;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const a = scrollingAudioRef.current;
+    if (!a) return;
+    const isMuted = localStorage.getItem('word-embedding-video:muted') === 'true';
+    a.muted = isMuted;
+
+    // The fast scrolling animation occurs between local time 35.4s and 38.6s
+    const inScrollWindow = lt >= 35.4 && lt <= 38.6;
+    if (playing && inScrollWindow) {
+      const elapsed = lt - 35.4;
+      const targetTime = elapsed % (a.duration || 1.0);
+      if (Math.abs(a.currentTime - targetTime) > 0.15) {
+        a.currentTime = targetTime;
+      }
+      if (a.paused) {
+        a.play().catch(() => {});
+      }
+    } else {
+      if (!a.paused) {
+        a.pause();
+      }
+    }
+  }, [lt, playing]);
+
   // hero zoom + dim, leading into the matrix scene
   const zoomP = animate({ from: 0, to: 1, start: 42.6, end: 44.4, ease: Easing.easeInOutCubic })(lt);
   const dimP = zoomP;
