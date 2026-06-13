@@ -1,6 +1,67 @@
 // scenes-1.jsx — Scene 1: Title  ·  Scene 1.5: Pipeline  ·  Scene 2: Tokenization → Token IDs → Vocabulary
 // Timed to voiceover: title 0–18 · pipeline 18–31 · tokens 31–75.2 (global)
 
+let audioCtx = null;
+function playClickSound(isSpace = false) {
+  try {
+    const isMuted = localStorage.getItem('word-embedding-video:muted') === 'true';
+    if (isMuted) return;
+
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.type = 'triangle';
+    const freq = isSpace ? (550 + Math.random() * 150) : (1100 + Math.random() * 400);
+    osc.frequency.setValueAtTime(freq, t);
+    osc.frequency.exponentialRampToValueAtTime(100, t + 0.05);
+    
+    const vol = isSpace ? 0.06 : 0.035;
+    gain.gain.setValueAtTime(vol, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+    
+    osc.start(t);
+    osc.stop(t + 0.05);
+
+    // Transient noise burst
+    const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.02, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseBuffer.length; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+    
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = noiseBuffer;
+    
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = isSpace ? 1400 : 2400;
+    
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(isSpace ? 0.03 : 0.02, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.015);
+    
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    
+    noise.start(t);
+    noise.stop(t + 0.02);
+  } catch (e) {
+    console.warn('Web Audio click failed:', e);
+  }
+}
+
 // ── Scene 1 · Title (0–18s) ─────────────────────────────────────────────────
 function SceneTitle() {
   const { localTime: lt, duration } = useSprite();
@@ -188,6 +249,22 @@ function SceneTokens() {
 
   // “token” tags under each chip, once chips form
   const tagT = lt >= 3.8 ? lt - 3.8 : -1;
+
+  const { playing } = useTimeline();
+  const lastTypedRef = React.useRef(0);
+  React.useEffect(() => {
+    if (!playing) {
+      lastTypedRef.current = typedChars;
+      return;
+    }
+    if (typedChars > lastTypedRef.current && typedChars <= SENT_TOTAL_CHARS) {
+      const isSpace = typedChars === 4 || typedChars === 8 || typedChars === 12;
+      playClickSound(isSpace);
+      lastTypedRef.current = typedChars;
+    } else if (typedChars < lastTypedRef.current) {
+      lastTypedRef.current = typedChars;
+    }
+  }, [typedChars, playing]);
 
   // hero zoom + dim, leading into the matrix scene
   const zoomP = animate({ from: 0, to: 1, start: 42.6, end: 44.4, ease: Easing.easeInOutCubic })(lt);
