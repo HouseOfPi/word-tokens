@@ -243,6 +243,8 @@ function SceneTokens() {
     const a = new Audio('scrolling.wav');
     a.preload = 'auto';
     a.loop = true;
+    // Guard: if file fails to load, mark as broken so the playback effect skips it
+    a.onerror = () => { a._broken = true; };
     scrollingAudioRef.current = a;
     return () => {
       a.pause();
@@ -252,7 +254,7 @@ function SceneTokens() {
 
   React.useEffect(() => {
     const a = scrollingAudioRef.current;
-    if (!a) return;
+    if (!a || a._broken) return;
     const isMuted = localStorage.getItem('word-embedding-video:muted') === 'true';
     a.muted = isMuted;
 
