@@ -331,7 +331,7 @@ function SceneTokens() {
       <Caption lt={lt} show={9.0} hide={13.0}>every piece — even the period — is a token</Caption>
       <Caption lt={lt} show={17.6} hide={20.8}>where do those numbers come from?</Caption>
       <Caption lt={lt} show={21.7} hide={27.0}>one numbered list of every token — fixed before training</Caption>
-      <Caption lt={lt} show={27.6} hide={34.0}>mostly subword pieces — any text can be built from ~50k parts</Caption>
+      <Caption lt={lt} show={27.6} hide={34.0}>vocabulary size and token IDs are unique to each model (e.g. GPT, Llama, BERT)</Caption>
       <Caption lt={lt} show={40.2} hide={43.4}>a token’s ID is simply its position in that list</Caption>
 
       {/* the vocabulary: a live scroll through the model's full token list */}
@@ -371,62 +371,53 @@ function SceneTokens() {
         }
         const thumbTop = clamp(scroll / 50257, 0, 1) * (ROWS_H - 40);
         return (
-          <React.Fragment>
-            <div style={{
-              position: 'absolute', left: '50%', top: 590, width: 620,
-              transform: `translate(-50%, ${(1 - a) * 20}px)`, opacity: a,
-              background: C.panel, border: `1.5px solid ${C.line}`, borderRadius: 16,
-              boxShadow: `0 8px 28px rgba(${C.inkRGB},0.08)`, padding: '14px 0 14px',
-            }}>
-              <div style={{ padding: '0 26px 12px', borderBottom: `1px solid ${C.lineSoft}` }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <span style={{
-                    fontFamily: F.mono, fontSize: 19, color: C.inkSoft,
-                    letterSpacing: '0.18em', textTransform: 'uppercase',
-                  }}>vocabulary</span>
-                  <span style={{
-                    fontFamily: F.mono, fontSize: 19, color: settledV ? C.coral : C.inkSoft,
-                    fontVariantNumeric: 'tabular-nums', fontWeight: settledV ? 600 : 400,
-                    whiteSpace: 'nowrap',
-                  }}>{Math.round(scroll).toLocaleString('en-US')} / 50,257</span>
-                </div>
+          <div style={{
+            position: 'absolute', left: '50%', top: 590, width: 620,
+            transform: `translate(-50%, ${(1 - a) * 20}px)`, opacity: a,
+            background: C.panel, border: `1.5px solid ${C.line}`, borderRadius: 16,
+            boxShadow: `0 8px 28px rgba(${C.inkRGB},0.08)`, padding: '14px 0 14px',
+          }}>
+            <div style={{ padding: '0 26px 12px', borderBottom: `1px solid ${C.lineSoft}` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{
+                  fontFamily: F.mono, fontSize: 19, color: C.inkSoft,
+                  letterSpacing: '0.18em', textTransform: 'uppercase',
+                }}>vocabulary</span>
+                <span style={{
+                  fontFamily: F.mono, fontSize: 19, color: settledV ? C.coral : C.inkSoft,
+                  fontVariantNumeric: 'tabular-nums', fontWeight: settledV ? 600 : 400,
+                  whiteSpace: 'nowrap',
+                }}>{Math.round(scroll).toLocaleString('en-US')} / 50,257</span>
+              </div>
 
-              </div>
-              <div style={{ position: 'relative', height: ROWS_H, overflow: 'hidden', margin: '4px 0' }}>
-                {rows.map(({ r, y }) => {
-                  const hero = settledV && r === 2543;
-                  return (
-                    <div key={r} style={{
-                      position: 'absolute', left: 12, right: 34, top: y - PITCH / 2, height: PITCH,
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      padding: '0 22px', borderRadius: 9,
-                      background: hero ? `rgba(${C.accentRGB},0.13)` : 'transparent',
-                    }}>
-                      <span style={{
-                        fontFamily: F.mono, fontSize: 23, fontVariantNumeric: 'tabular-nums',
-                        color: hero ? C.coralDeep : C.inkSoft, fontWeight: hero ? 600 : 400,
-                      }}>{r}</span>
-                      <span style={{
-                        fontFamily: F.serif, fontSize: 24, color: hero ? C.ink : C.inkSoft,
-                        fontWeight: hero ? 600 : 400,
-                      }}>{wordFor(r)}</span>
-                    </div>
-                  );
-                })}
-                <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 28, background: `linear-gradient(rgba(${C.cardRGB},1), rgba(${C.cardRGB},0))`, pointerEvents: 'none' }}></div>
-                <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 28, background: `linear-gradient(rgba(${C.cardRGB},0), rgba(${C.cardRGB},1))`, pointerEvents: 'none' }}></div>
-                <div style={{ position: 'absolute', right: 14, top: 0, width: 8, height: ROWS_H, borderRadius: 4, background: C.lineSoft }}></div>
-                <div style={{ position: 'absolute', right: 14, top: thumbTop, width: 8, height: 40, borderRadius: 4, background: settledV ? C.coral : C.inkSoft, opacity: 0.85 }}></div>
-              </div>
             </div>
-            <div style={{
-              position: 'absolute', left: 0, right: 0, top: 880, textAlign: 'center',
-              fontFamily: F.sans, fontSize: 22, color: C.inkSoft,
-              opacity: a, transform: `translateY(${(1 - a) * 15}px)`,
-            }}>
-              <span style={{ color: C.coral, fontWeight: 600 }}>* Note:</span> Vocabulary size and token IDs are unique to each model (e.g. GPT, Llama, BERT).
+            <div style={{ position: 'relative', height: ROWS_H, overflow: 'hidden', margin: '4px 0' }}>
+              {rows.map(({ r, y }) => {
+                const hero = settledV && r === 2543;
+                return (
+                  <div key={r} style={{
+                    position: 'absolute', left: 12, right: 34, top: y - PITCH / 2, height: PITCH,
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '0 22px', borderRadius: 9,
+                    background: hero ? `rgba(${C.accentRGB},0.13)` : 'transparent',
+                  }}>
+                    <span style={{
+                      fontFamily: F.mono, fontSize: 23, fontVariantNumeric: 'tabular-nums',
+                      color: hero ? C.coralDeep : C.inkSoft, fontWeight: hero ? 600 : 400,
+                    }}>{r}</span>
+                    <span style={{
+                      fontFamily: F.serif, fontSize: 24, color: hero ? C.ink : C.inkSoft,
+                      fontWeight: hero ? 600 : 400,
+                    }}>{wordFor(r)}</span>
+                  </div>
+                );
+              })}
+              <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 28, background: `linear-gradient(rgba(${C.cardRGB},1), rgba(${C.cardRGB},0))`, pointerEvents: 'none' }}></div>
+              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 28, background: `linear-gradient(rgba(${C.cardRGB},0), rgba(${C.cardRGB},1))`, pointerEvents: 'none' }}></div>
+              <div style={{ position: 'absolute', right: 14, top: 0, width: 8, height: ROWS_H, borderRadius: 4, background: C.lineSoft }}></div>
+              <div style={{ position: 'absolute', right: 14, top: thumbTop, width: 8, height: 40, borderRadius: 4, background: settledV ? C.coral : C.inkSoft, opacity: 0.85 }}></div>
             </div>
-          </React.Fragment>
+          </div>
         );
       })()}
     </div>
