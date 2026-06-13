@@ -417,6 +417,18 @@ function SceneTokens() {
               <div style={{ position: 'absolute', right: 14, top: 0, width: 8, height: ROWS_H, borderRadius: 4, background: C.lineSoft }}></div>
               <div style={{ position: 'absolute', right: 14, top: thumbTop, width: 8, height: 40, borderRadius: 4, background: settledV ? C.coral : C.inkSoft, opacity: 0.85 }}></div>
             </div>
+            <div style={{
+              padding: '10px 12px 0',
+              borderTop: `1px solid ${C.lineSoft}`,
+              margin: '6px 14px 0',
+              fontFamily: F.sans,
+              fontSize: 13,
+              color: C.inkSoft,
+              textAlign: 'center',
+              lineHeight: 1.4,
+            }}>
+              <span style={{ color: C.coral, fontWeight: 600 }}>* Note:</span> Vocabulary size and token IDs are unique to each model (e.g. GPT, Llama, BERT).
+            </div>
           </div>
         );
       })()}
