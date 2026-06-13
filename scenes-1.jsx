@@ -121,14 +121,7 @@ function ScenePipeline() {
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
           }}>
             {[0.9, -0.5, 0.3].map((v, i) => (
-              <div key={i} style={{
-                width: 64, height: 22, borderRadius: 6, background: cellColor(v),
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: C.ink,
-                fontVariantNumeric: 'tabular-nums',
-              }}>
-                {fmtNum(v)}
-              </div>
+              <div key={i} style={{ width: 64, height: 22, borderRadius: 6, background: cellColor(v) }}></div>
             ))}
           </div>
         </div>
