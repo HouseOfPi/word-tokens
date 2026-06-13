@@ -334,7 +334,32 @@ function SceneTokens() {
       <Caption lt={lt} show={9.0} hide={13.0}>every piece — even the period — is a token</Caption>
       <Caption lt={lt} show={17.6} hide={20.8}>where do those numbers come from?</Caption>
       <Caption lt={lt} show={21.7} hide={27.0}>one numbered list of every token — fixed before training</Caption>
-      <Caption lt={lt} show={27.6} hide={34.0}>vocabulary size and token IDs are unique to each model (e.g. GPT, Llama, BERT)</Caption>
+      {(() => {
+        const show = 27.6, hide = 34.5;
+        const a = windowAlpha(lt, show, hide, 0.55, 0.5);
+        if (a <= 0) return null;
+        const lead = lt - show;            // seconds since this callout appeared
+        const cardE = Easing.easeOutCubic(clamp(lead / 0.55, 0, 1));
+        return (
+          <div style={{
+            position: 'absolute', left: '50%', top: 902,
+            transform: `translate(-50%, ${(1 - cardE) * 14}px)`,
+            opacity: a * cardE,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: C.panel,
+            border: `1.5px solid ${C.line}`,
+            borderRadius: 18, padding: '22px 44px',
+            boxShadow: `0 14px 44px rgba(${C.inkRGB},0.10)`,
+            whiteSpace: 'nowrap',
+          }}>
+            <div style={{
+              fontFamily: F.serif, fontSize: 32, fontStyle: 'italic', color: C.ink,
+            }}>
+              vocabulary &amp; token IDs are <span style={{ color: C.coral, fontStyle: 'normal', fontWeight: 600 }}>unique to each model</span>
+            </div>
+          </div>
+        );
+      })()}
       <Caption lt={lt} show={40.2} hide={43.4}>a token’s ID is simply its position in that list</Caption>
 
       {/* the vocabulary: a live scroll through the model's full token list */}
