@@ -121,7 +121,14 @@ function ScenePipeline() {
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
           }}>
             {[0.9, -0.5, 0.3].map((v, i) => (
-              <div key={i} style={{ width: 64, height: 22, borderRadius: 6, background: cellColor(v) }}></div>
+              <div key={i} style={{
+                width: 64, height: 22, borderRadius: 6, background: cellColor(v),
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: F.mono, fontSize: 11, fontWeight: 600, color: C.ink,
+                fontVariantNumeric: 'tabular-nums',
+              }}>
+                {fmtNum(v)}
+              </div>
             ))}
           </div>
         </div>
@@ -136,7 +143,22 @@ function ScenePipeline() {
             display: 'flex', gap: 7, opacity: stripA,
           }}>
             {VEC.slice(0, 5).map((v, i) => (
-              <div key={i} style={{ width: 38, height: 52, borderRadius: 8, background: cellColor(v), border: `1px solid ${C.lineSoft}` }}></div>
+              <div key={i} style={{
+                width: 38, height: 52, borderRadius: 8, background: cellColor(v),
+                border: `1px solid ${C.lineSoft}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                overflow: 'hidden',
+              }}>
+                <span style={{
+                  transform: 'rotate(-90deg)',
+                  display: 'inline-block',
+                  fontFamily: F.mono, fontSize: 10, fontWeight: 600, color: C.ink,
+                  whiteSpace: 'nowrap',
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
+                  {fmtNum(v)}
+                </span>
+              </div>
             ))}
           </div>
         )}
