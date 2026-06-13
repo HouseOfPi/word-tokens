@@ -174,20 +174,20 @@ function SceneTokens() {
   const alpha = sceneAlpha(lt, duration, 0.4, 0.9);
 
   // typing — “It starts with a sentence.”
-  const typedChars = Math.floor(animate({ from: 0, to: SENT_TOTAL_CHARS, start: 0.8, end: 4.4, ease: Easing.linear })(lt));
-  const caretOn = lt >= 0.5 && lt <= 5.0;
+  const typedChars = Math.floor(animate({ from: 0, to: SENT_TOTAL_CHARS, start: 0.2, end: 1.8, ease: Easing.linear })(lt));
+  const caretOn = lt >= 0.1 && lt <= 2.2;
   const caretBlink = (Math.floor(lt * 2.6) % 2) === 0 ? 1 : 0;
 
   // morph phases — “broken into pieces, called tokens” / “quietly → quiet + ly”
-  const chipP  = animate({ from: 0, to: 1, start: 4.6, end: 6.2, ease: Easing.easeInOutCubic })(lt);
-  const splitP = animate({ from: 0, to: 1, start: 11.5, end: 12.8, ease: Easing.easeInOutCubic })(lt);
-  const pulseT = lt >= 13.0 && lt < 16.4 ? lt - 13.0 : -1;
+  const chipP  = animate({ from: 0, to: 1, start: 2.2, end: 3.5, ease: Easing.easeInOutCubic })(lt);
+  const splitP = animate({ from: 0, to: 1, start: 7.2, end: 8.5, ease: Easing.easeInOutCubic })(lt);
+  const pulseT = lt >= 8.8 && lt < 12.2 ? lt - 8.8 : -1;
 
   // IDs — “Notice each token got a number.”
   const idsT = lt >= 16.6 ? lt - 16.6 : -1;
 
   // “token” tags under each chip, once chips form
-  const tagT = lt >= 6.6 ? lt - 6.6 : -1;
+  const tagT = lt >= 3.8 ? lt - 3.8 : -1;
 
   // hero zoom + dim, leading into the matrix scene
   const zoomP = animate({ from: 0, to: 1, start: 42.6, end: 44.4, ease: Easing.easeInOutCubic })(lt);
@@ -243,7 +243,7 @@ function SceneTokens() {
         </div>
       </div>
 
-      <Caption lt={lt} show={13.6} hide={16.2}>every piece — even the period — is a token</Caption>
+      <Caption lt={lt} show={9.0} hide={13.0}>every piece — even the period — is a token</Caption>
       <Caption lt={lt} show={17.6} hide={20.8}>where do those numbers come from?</Caption>
       <Caption lt={lt} show={21.7} hide={27.0}>one numbered list of every token — fixed before training</Caption>
       <Caption lt={lt} show={27.6} hide={34.0}>mostly subword pieces — any text can be built from ~50k parts</Caption>
