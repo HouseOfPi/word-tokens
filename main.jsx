@@ -86,8 +86,8 @@ function App() {
     <React.Fragment>
       <Stage width={1920} height={1080} duration={238} background={C.bg} persistKey="word-embedding-video" audioSrc="voiceover.mp3">
       <ScreenLabel>
-        <Sprite start={0} end={18}><SceneTitle /></Sprite>
-        <Sprite start={18} end={31}><ScenePipeline /></Sprite>
+        <Sprite start={0} end={11}><SceneTitle /></Sprite>
+        <Sprite start={11} end={31}><ScenePipeline /></Sprite>
         <Sprite start={31} end={75.2}><SceneTokens /></Sprite>
         <Sprite start={75} end={117.5}><SceneMatrixVector /></Sprite>
         <Sprite start={117.5} end={135.4}><SceneLearnedValues /></Sprite>
