@@ -50,7 +50,7 @@ function SceneTitle() {
       </div>
 
       {/* P2 · “That’s exactly what we’re going to find out.” */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 700, textAlign: 'center', ...fadeUp(lt, 7.8, 0.8, 14) }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 700, textAlign: 'center', ...fadeUp(lt, 12.0, 0.8, 14) }}>
         <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 36, color: C.inkSoft }}>
           let’s find out
         </div>
