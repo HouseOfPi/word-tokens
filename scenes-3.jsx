@@ -16,17 +16,31 @@ const HERO_PT = { x: 1148, y: 468 };
 const KITTEN_PT = { x: 1262, y: 372 };
 
 // small 8-cell pattern strip shown above a point during the convergence phase
-function MiniPattern({ x, y, valFor, a }) {
+// valFor → cell color (may animate); numFor → displayed number (kept stable to
+// avoid digit flicker). Defaults numFor to valFor for static strips.
+function MiniPattern({ x, y, valFor, numFor, a }) {
   if (a <= 0) return null;
+  const numF = numFor || valFor;
   return (
     <div style={{
-      position: 'absolute', left: x, top: y, transform: 'translate(-50%, -100%)',
+      position: 'absolute', left: 0, top: 0,
+      transform: `translate(${x}px, ${y}px) translate(-50%, -100%)`,
+      willChange: 'transform',
       display: 'flex', gap: 4, opacity: a,
       background: C.panel, border: `1px solid ${C.lineSoft}`, borderRadius: 9,
       padding: 6, boxShadow: `0 4px 14px rgba(${C.inkRGB},0.08)`,
     }}>
       {Array.from({ length: 8 }, (_, c) => (
-        <div key={c} style={{ width: 20, height: 28, borderRadius: 4, background: cellColor(valFor(c)) }}></div>
+        <div key={c} style={{
+          width: 20, height: 28, borderRadius: 4, background: cellColor(valFor(c)),
+          display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+        }}>
+          <span style={{
+            transform: 'rotate(-90deg)', display: 'inline-block',
+            fontFamily: F.mono, fontSize: 8, fontWeight: 600, color: C.ink,
+            whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums',
+          }}>{fmtNum(numF(c))}</span>
+        </div>
       ))}
     </div>
   );
@@ -45,10 +59,15 @@ function SceneSpace() {
   const kitX = lerp(1485, KITTEN_PT.x, conv), kitY = lerp(255, KITTEN_PT.y, conv);
   const stripsA = windowAlpha(lt, 1.0, 15.8, 0.7, 0.8);
 
-  const kittenVal = (c) => {
-    const noise = (srand(c, 55) * 2 - 1) * 1.1;
-    return lerp(noise, VEC[c] * 0.92 + 0.06, conv);
-  };
+  // Both cat and kitten start from their own noisy vectors and drift toward a
+  // shared aligned pattern (near VEC) — neither is a fixed anchor.
+  const target = (c) => VEC[c] * 0.92 + 0.06;          // shared convergence pattern
+  const kittenVal = (c) => lerp((srand(c, 55) * 2 - 1) * 1.1, target(c), conv);
+  const catVal    = (c) => lerp((srand(c, 17) * 2 - 1) * 1.1, target(c) + 0.05, conv);
+  // displayed numbers: quantized so the last digit ticks in coarse steps
+  // instead of flickering every frame
+  const kittenNum = (c) => Math.round(kittenVal(c) / 0.05) * 0.05;
+  const catNum    = (c) => Math.round(catVal(c) / 0.05) * 0.05;
 
   // P17 · the rest of the space populates
   // P18 · links + zoom
@@ -112,17 +131,17 @@ function SceneSpace() {
         })}
 
         {/* kitten — present from the start, converging toward cat */}
-        <div style={{ position: 'absolute', left: kitX, top: kitY, transform: 'translate(-50%, -50%)', opacity: Math.min(1, gridA * 1.4) }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, transform: `translate(${kitX}px, ${kitY}px) translate(-50%, -50%)`, willChange: 'transform', opacity: Math.min(1, gridA * 1.4) }}>
           <div style={dot(true, true)}></div>
           <div style={{
             marginTop: 10, textAlign: 'center',
             fontFamily: F.mono, fontSize: 26, color: C.ink, opacity: 0.9,
           }}>kitten</div>
         </div>
-        <MiniPattern x={kitX} y={kitY - 36} valFor={kittenVal} a={stripsA} />
+        <MiniPattern x={kitX} y={kitY - 36} valFor={kittenVal} numFor={kittenNum} a={stripsA} />
 
         {/* hero: cat — converging to its final spot */}
-        <div style={{ position: 'absolute', left: catX, top: catY, transform: 'translate(-50%, -50%)', opacity: Math.min(1, gridA * 1.4) }}>
+        <div style={{ position: 'absolute', left: 0, top: 0, transform: `translate(${catX}px, ${catY}px) translate(-50%, -50%)`, willChange: 'transform', opacity: Math.min(1, gridA * 1.4) }}>
           {ringP > 0 && ringP < 1 && (
             <div style={{
               position: 'absolute', left: '50%', top: 13, width: 26, height: 26,
@@ -141,7 +160,7 @@ function SceneSpace() {
             fontSize: 34, color: C.ink,
           }}>cat</div>
         </div>
-        <MiniPattern x={catX} y={catY - 36} valFor={(c) => VEC[c]} a={stripsA} />
+        <MiniPattern x={catX} y={catY - 36} valFor={catVal} numFor={catNum} a={stripsA} />
       </div>
 
       <Kicker lt={lt} show={0.6} hide={42.2} num="08" text="Meaning as geometry" />

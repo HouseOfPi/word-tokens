@@ -383,6 +383,15 @@ function Stage({
   autoplay = true,
   persistKey = 'animstage',
   audioSrc = null,
+  musicSrc = null,
+  // Background-music volume envelope (seconds → gain). Fades in over the intro,
+  // ducks low once narration starts, holds quietly underneath.
+  musicEnvelope = (t) => {
+    const fadeIn = clamp(t / 2, 0, 1);        // 0 → 1 over 0–2s
+    const duck = 1 - 0.88 * clamp((t - 6.5) / 1.5, 0, 1); // → 0.12 over 6.5–8s
+    return fadeIn * duck;
+  },
+  musicMaxGain = 0.6,
   children,
 }) {
   const [time, setTime] = React.useState(() => {
@@ -469,10 +478,71 @@ function Stage({
     }
   }, [time, audioSrc]);
 
+  // ── synced background-music track (optional) ──
+  // Mirrors the voiceover's play/pause/scrub handling; volume follows musicEnvelope.
+  const musicRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!musicSrc) return;
+    const existing = document.getElementById('__music');
+    const m = existing || new Audio(musicSrc);
+    m.preload = 'auto';
+    m.loop = true;
+    m.muted = muted;
+    musicRef.current = m;
+    const unlock = () => {
+      const mu = musicRef.current;
+      if (mu && playingRef.current && mu.paused) mu.play().catch(() => {});
+    };
+    window.addEventListener('pointerdown', unlock, true);
+    window.addEventListener('keydown', unlock, true);
+    return () => {
+      window.removeEventListener('pointerdown', unlock, true);
+      window.removeEventListener('keydown', unlock, true);
+      m.pause();
+      musicRef.current = null;
+    };
+  }, [musicSrc]);
+
+  React.useEffect(() => {
+    const m = musicRef.current;
+    if (!m) return;
+    if (playing) m.play().catch(() => {});
+    else m.pause();
+  }, [playing, musicSrc]);
+
+  // Keep the music locked to the playhead (same debounced scrub handling as VO)
+  React.useEffect(() => {
+    const m = musicRef.current;
+    if (!m) return;
+    if (Math.abs(m.currentTime - time) > 0.35) {
+      if (isSeekingRef.current) {
+        if (!m.paused) m.pause();
+        if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
+        seekDebounceRef.current = setTimeout(() => {
+          isSeekingRef.current = false;
+          try { m.currentTime = Math.max(0, time); } catch {}
+          if (playingRef.current) m.play().catch(() => {});
+        }, 150);
+      } else {
+        try { m.currentTime = Math.max(0, time); } catch {}
+      }
+    }
+  }, [time, musicSrc]);
+
+  // Per-frame music volume from the envelope
+  React.useEffect(() => {
+    const m = musicRef.current;
+    if (!m) return;
+    const g = clamp(musicEnvelope(time), 0, 1) * musicMaxGain;
+    m.volume = clamp(g, 0, 1);
+  }, [time, musicSrc, musicMaxGain]);
+
   // Sync and persist muted state
   React.useEffect(() => {
     const a = audioRef.current;
     if (a) a.muted = muted;
+    const m = musicRef.current;
+    if (m) m.muted = muted;
     try { localStorage.setItem(persistKey + ':muted', String(muted)); } catch {}
   }, [muted, persistKey]);
 

@@ -84,7 +84,7 @@ function App() {
   const idx = Math.max(0, THEME_ORDER.indexOf(t.theme));
   return (
     <React.Fragment>
-      <Stage width={1920} height={1080} duration={238} background={C.bg} persistKey="word-embedding-video" audioSrc="voiceover.mp3">
+      <Stage width={1920} height={1080} duration={238} background={C.bg} persistKey="word-embedding-video" audioSrc="voiceover.mp3" musicSrc="music.mp3">
       <ScreenLabel>
         <Sprite start={0} end={15.15}><SceneTitle /></Sprite>
         <Sprite start={15.15} end={31}><ScenePipeline /></Sprite>
