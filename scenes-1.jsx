@@ -189,6 +189,40 @@ function SceneTokens() {
   // “token” tags under each chip, once chips form
   const tagT = lt >= 3.8 ? lt - 3.8 : -1;
 
+  const { playing } = useTimeline();
+  const typingAudioRef = React.useRef(null);
+  React.useEffect(() => {
+    const a = new Audio('keyboard_typing.wav');
+    a.preload = 'auto';
+    typingAudioRef.current = a;
+    return () => {
+      a.pause();
+      typingAudioRef.current = null;
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const a = typingAudioRef.current;
+    if (!a) return;
+    const isMuted = localStorage.getItem('word-embedding-video:muted') === 'true';
+    a.muted = isMuted;
+
+    const inTypingWindow = lt >= 0.2 && lt <= 1.8;
+    if (playing && inTypingWindow) {
+      const targetTime = lt - 0.2;
+      if (Math.abs(a.currentTime - targetTime) > 0.15) {
+        a.currentTime = clamp(targetTime, 0, a.duration || 10);
+      }
+      if (a.paused) {
+        a.play().catch(() => {});
+      }
+    } else {
+      if (!a.paused) {
+        a.pause();
+      }
+    }
+  }, [lt, playing]);
+
   // hero zoom + dim, leading into the matrix scene
   const zoomP = animate({ from: 0, to: 1, start: 42.6, end: 44.4, ease: Easing.easeInOutCubic })(lt);
   const dimP = zoomP;
