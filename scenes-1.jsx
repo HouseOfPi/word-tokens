@@ -65,21 +65,22 @@ function ScenePipeline() {
   const alpha = sceneAlpha(lt, duration, 0.5, 0.9);
 
   // camera dive into the embedding gate at the end
-  const zoomP = animate({ from: 0, to: 1, start: 10.4, end: 12.8, ease: Easing.easeInCubic })(lt);
+  const zoomP = animate({ from: 0, to: 1, start: 13.0, end: 15.4, ease: Easing.easeInCubic })(lt);
   const zoom = 1 + zoomP * 1.6;
 
-  // flow choreography
-  const cardX = animate({ from: 370, to: 810, start: 2.0, end: 4.2, ease: Easing.easeInOutCubic })(lt);
+  // flow choreography (delayed ~5s so the number strip emerges as the
+  // voiceover says "comes out the other side as numbers")
+  const cardX = animate({ from: 370, to: 810, start: 7.0, end: 9.2, ease: Easing.easeInOutCubic })(lt);
   const cardA = Math.min(
     Easing.easeOutCubic(clamp((lt - 0.6) / 0.6, 0, 1)),
-    1 - clamp((lt - 3.8) / 0.5, 0, 1)
+    1 - clamp((lt - 8.8) / 0.5, 0, 1)
   );
-  const stripX = animate({ from: 990, to: 1430, start: 4.4, end: 6.6, ease: Easing.easeInOutCubic })(lt);
-  const stripA = Math.min(clamp((lt - 4.4) / 0.5, 0, 1), 1 - clamp((lt - 6.3) / 0.5, 0, 1));
+  const stripX = animate({ from: 990, to: 1430, start: 9.4, end: 11.6, ease: Easing.easeInOutCubic })(lt);
+  const stripA = Math.min(clamp((lt - 9.4) / 0.5, 0, 1), 1 - clamp((lt - 11.3) / 0.5, 0, 1));
 
   // pulses
-  const gatePulse = Math.max(0, Math.sin(clamp((lt - 4.0) / 1.1, 0, 1) * Math.PI));
-  const llmPulse = Math.max(0, Math.sin(clamp((lt - 6.4) / 1.2, 0, 1) * Math.PI));
+  const gatePulse = Math.max(0, Math.sin(clamp((lt - 9.0) / 1.1, 0, 1) * Math.PI));
+  const llmPulse = Math.max(0, Math.sin(clamp((lt - 11.4) / 1.2, 0, 1) * Math.PI));
 
   const stationA = (k) => Easing.easeOutCubic(clamp((lt - 0.6 - k * 0.3) / 0.7, 0, 1));
 
@@ -176,9 +177,9 @@ function ScenePipeline() {
         </div>
       </div>
 
-      <Kicker lt={lt} show={0.6} hide={11.2} text="The big picture" />
-      <Caption lt={lt} show={1.6} hide={8.2}>before the model can read anything, text must become numbers</Caption>
-      <Caption lt={lt} show={8.8} hide={12.0}>let’s look inside the embedding layer</Caption>
+      <Kicker lt={lt} show={0.6} hide={13.8} text="The big picture" />
+      <Caption lt={lt} show={1.6} hide={11.0}>before the model can read anything, text must become numbers</Caption>
+      <Caption lt={lt} show={11.6} hide={14.6}>let’s look inside the embedding layer</Caption>
     </div>
   );
 }
