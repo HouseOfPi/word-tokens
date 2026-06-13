@@ -404,6 +404,10 @@ function Stage({
   const canvasRef = React.useRef(null);
   const rafRef = React.useRef(null);
   const lastTsRef = React.useRef(null);
+  // Tracks whether the user is actively scrubbing (drag or wheel)
+  const isSeekingRef = React.useRef(false);
+  const seekDebounceRef = React.useRef(null);
+  const wheelDebounceRef = React.useRef(null);
 
   const playingRef = React.useRef(playing);
   playingRef.current = playing;
@@ -441,11 +445,27 @@ function Stage({
   }, [playing, audioSrc]);
 
   // keep the audio locked to the playhead (scrubs, seeks, loop wrap, drift)
+  // Debounced: only actually seek the audio element once the user stops scrubbing
+  // to avoid flooding the browser audio engine with rapid currentTime assignments.
   React.useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
     if (Math.abs(a.currentTime - time) > 0.35) {
-      try { a.currentTime = Math.max(0, time); } catch {}
+      if (isSeekingRef.current) {
+        // User is actively scrubbing — pause audio immediately to silence crackle
+        if (!a.paused) a.pause();
+        // Debounce the actual seek to when they stop
+        if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
+        seekDebounceRef.current = setTimeout(() => {
+          isSeekingRef.current = false;
+          try { a.currentTime = Math.max(0, time); } catch {}
+          // Resume if still supposed to be playing
+          if (playingRef.current) a.play().catch(() => {});
+        }, 150);
+      } else {
+        // Normal drift correction during playback (no scrub)
+        try { a.currentTime = Math.max(0, time); } catch {}
+      }
     }
   }, [time, audioSrc]);
 
@@ -565,6 +585,12 @@ function Stage({
           onWheel={(e) => {
             e.preventDefault();
             const delta = e.deltaY || e.deltaX;
+            // Mark as seeking so audio debounce kicks in
+            isSeekingRef.current = true;
+            if (wheelDebounceRef.current) clearTimeout(wheelDebounceRef.current);
+            wheelDebounceRef.current = setTimeout(() => {
+              isSeekingRef.current = false;
+            }, 200);
             setTime(t => clamp(t + delta * 0.04, 0, duration));
           }}
           style={{
@@ -598,6 +624,19 @@ function Stage({
         onReset={() => { setTime(0); }}
         onSeek={(t) => setTime(t)}
         onHover={(t) => setHoverTime(t)}
+        onSeekStart={() => { isSeekingRef.current = true; }}
+        onSeekEnd={() => {
+          // Give debounce a moment to flush, then mark done
+          if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current);
+          seekDebounceRef.current = setTimeout(() => {
+            isSeekingRef.current = false;
+            const a = audioRef.current;
+            if (a) {
+              try { a.currentTime = Math.max(0, time); } catch {}
+              if (playingRef.current) a.play().catch(() => {});
+            }
+          }, 80);
+        }}
       />
     </div>
   );
@@ -607,7 +646,7 @@ function Stage({
 // Play/pause, return-to-begin, scrub track, time display.
 // Uses fixed-width time fields so layout doesn't thrash.
 
-function PlaybackBar({ time, duration, playing, muted, onMuteToggle, onPlayPause, onReset, onSeek, onHover }) {
+function PlaybackBar({ time, duration, playing, muted, onMuteToggle, onPlayPause, onReset, onSeek, onHover, onSeekStart, onSeekEnd }) {
   const trackRef = React.useRef(null);
   const [dragging, setDragging] = React.useState(false);
 
@@ -633,6 +672,7 @@ function PlaybackBar({ time, duration, playing, muted, onMuteToggle, onPlayPause
 
   const onTrackDown = (e) => {
     setDragging(true);
+    onSeekStart();
     const t = timeFromEvent(e);
     onSeek(t);
     onHover(null);
@@ -640,7 +680,10 @@ function PlaybackBar({ time, duration, playing, muted, onMuteToggle, onPlayPause
 
   React.useEffect(() => {
     if (!dragging) return;
-    const onUp = () => setDragging(false);
+    const onUp = () => {
+      setDragging(false);
+      onSeekEnd();
+    };
     const onMove = (e) => {
       if (!trackRef.current) return;
       const t = timeFromEvent(e);
@@ -652,7 +695,7 @@ function PlaybackBar({ time, duration, playing, muted, onMuteToggle, onPlayPause
       window.removeEventListener('mouseup', onUp);
       window.removeEventListener('mousemove', onMove);
     };
-  }, [dragging, timeFromEvent, onSeek]);
+  }, [dragging, timeFromEvent, onSeek, onSeekEnd]);
 
   const pct = duration > 0 ? (time / duration) * 100 : 0;
   const fmt = (t) => {
